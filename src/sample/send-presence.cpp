@@ -1,8 +1,8 @@
 /*
-    This is a simple example in C of using the rich presence API asynchronously.
+    This is a simple example in C++ of using the rich presence API asynchronously.
 */
 
-#define _CRT_SECURE_NO_WARNINGS /* thanks Microsoft */
+#include <Windows.h>
 
 #include <stdint.h>
 #include <stdio.h>
@@ -11,7 +11,7 @@
 
 #include "discord_rpc.h"
 
-static const char* APPLICATION_ID = "345229890980937739";
+static const char* APPLICATION_ID = "726066035463290920";
 static int FrustrationLevel = 0;
 static int64_t StartTime;
 static int SendPresence = 1;
@@ -38,7 +38,7 @@ static void updateDiscordPresence()
         DiscordRichPresence discordPresence;
         memset(&discordPresence, 0, sizeof(discordPresence));
         discordPresence.state = "West of House";
-        sprintf(buffer, "Frustration level: %d", FrustrationLevel);
+        sprintf(buffer, "Frustration level: %d", FrustrationLevel++);
         discordPresence.details = buffer;
         discordPresence.startTimestamp = StartTime;
         discordPresence.endTimestamp = time(0) + 5 * 60;
@@ -134,63 +134,21 @@ static void discordInit()
 
 static void gameLoop()
 {
-    char line[512];
-    char* space;
-
     StartTime = time(0);
 
     printf("You are standing in an open field west of a white house.\n");
-    while (prompt(line, sizeof(line))) {
-        if (line[0]) {
-            if (line[0] == 'q') {
-                break;
-            }
+    while (true)
+    {
+        if (GetAsyncKeyState(VK_NUMPAD0)) break;
 
-            if (line[0] == 't') {
-                printf("Shutting off Discord.\n");
-                Discord_Shutdown();
-                continue;
-            }
-
-            if (line[0] == 'c') {
-                if (SendPresence) {
-                    printf("Clearing presence information.\n");
-                    SendPresence = 0;
-                }
-                else {
-                    printf("Restoring presence information.\n");
-                    SendPresence = 1;
-                }
-                updateDiscordPresence();
-                continue;
-            }
-
-            if (line[0] == 'y') {
-                printf("Reinit Discord.\n");
-                discordInit();
-                continue;
-            }
-
-            if (time(NULL) & 1) {
-                printf("I don't understand that.\n");
-            }
-            else {
-                space = strchr(line, ' ');
-                if (space) {
-                    *space = 0;
-                }
-                printf("I don't know the word \"%s\".\n", line);
-            }
-
-            ++FrustrationLevel;
-
-            updateDiscordPresence();
-        }
+        updateDiscordPresence();
 
 #ifdef DISCORD_DISABLE_IO_THREAD
         Discord_UpdateConnection();
 #endif
         Discord_RunCallbacks();
+
+        Sleep(30);
     }
 }
 
@@ -200,6 +158,8 @@ int main(int argc, char* argv[])
 
     gameLoop();
 
+    printf("Shutting down");
     Discord_Shutdown();
+
     return 0;
 }
