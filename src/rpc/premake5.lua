@@ -12,7 +12,7 @@ project "RPC"
     includedirs
     {
         ".",
-        "../../thirdparty/rapidjson-1.1.0/include"
+        "../../thirdparty/rapidjson-last/include"
     }
 
     vpaths
